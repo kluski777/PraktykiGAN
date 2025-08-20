@@ -20,7 +20,7 @@ def greisen(t: np.ndarray | float, E0: float = 1e3, Ec: float = 21.8):
     """
     beta0 = np.log(E0 / Ec)
     if isinstance(t, float):
-        if t <= 0.:
+        if t < 0.:
             return 0.0
         else:
             s = 3*t /(t + 2*beta0)
