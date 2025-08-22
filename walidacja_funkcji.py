@@ -91,7 +91,7 @@ def metropolis_hastings_probing(distribution: callable, length: int):
     return xs, ys
 
 
-def rejection_sampling_probing(distribution: callable, length: int, epsilon: int, looking_x_left: int = -1, looking_x_right: int = 1):
+def rejection_sampling_probing(distribution: callable, length: int, epsilon: int, looking_x_left: int = -1, looking_x_right: int = 1, from_x: int = None):
     """
         epsilon - zwroci takie x dla ktorych f(x) > epsilon
         X0 - charakterystyczna wartosc dla danego materialu - dlugosc radiacji
@@ -100,7 +100,8 @@ def rejection_sampling_probing(distribution: callable, length: int, epsilon: int
 
     minimized_function = minimize_scalar(lambda x: -distribution(x), method='brent') # moze wylazic na liczby urojone to trzeba by sprawdzic
     max_value = -minimized_function.fun # trzeba znalezc maksymalna wartosc dystrubucji
-    from_x = fsolve(lambda x: distribution(x) - epsilon, looking_x_left)
+    if from_x is None:
+        from_x = fsolve(lambda x: distribution(x) - epsilon, looking_x_left)
     to_x = fsolve(lambda x: distribution(x) - epsilon, looking_x_right)
 
     while len(xs) < length:
