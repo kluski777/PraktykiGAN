@@ -37,19 +37,33 @@ def greisen(t: np.ndarray | float, E0: float = 1e3, Ec: float = 21.8):
         return result
 
 
+
 def NKG(r: float, r_m: float = 79, s: float = 1, r_min: float = 1):
     """
-        r - distance from the main axis
-        r_m - Molier radius: for earth 79 meters at the sea level or 91 meters above the ground
-        s - shower age allegedly 0 < s < 2 but the maximum is for s = 1
-        r_min - a point where equation stops working
+    r - distance from the main axis
+    r_m - Molier radius: for earth 79 meters at the sea level or 91 meters above the ground
+    s - shower age allegedly 0 < s < 2 but the maximum is for s = 1
+    r_min - a point where equation stops working
+    r_max - where the equation stops working
     """
-    # print(f'No kurwa co jest')
-    # print(f'{r < r_min}')
-    if r < r_min:
-        r = r_min
-    r_ratio = r/r_m
-    return (r_ratio) ** (s - 2) * (1 + r_ratio) ** (s - 4.5)
+    r_max = 50 * r_m
+
+    if isinstance(r, (float, int)):
+        if r < 0.0:
+            return 0.0
+        if r < r_min:
+            r = r_min
+        if r > r_max:
+            r = r_max
+        r_ratio = r / r_m
+        return (r_ratio) ** (s - 2) * (1 + r_ratio) ** (s - 4.5)
+
+    elif isinstance(r, np.ndarray):
+        r = r.copy()  # unikamy modyfikacji oryginalnej tablicy
+        r[r < r_min] = r_min
+        r[r > r_max] = r_max
+        r_ratio = r / r_m
+        return np.where(r_ratio >= 0.0, (r_ratio) ** (s - 2) * (1 + r_ratio) ** (s - 4.5), 0.0)
 
 
 def jakis_rozklad(x):
