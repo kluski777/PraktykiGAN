@@ -37,6 +37,21 @@ def greisen(t: np.ndarray | float, E0: float = 1e3, Ec: float = 21.8):
         return result
 
 
+def NKG(r: float, r_m: float = 79, s: float = 1, r_min: float = 1):
+    """
+        r - distance from the main axis
+        r_m - Molier radius: for earth 79 meters at the sea level or 91 meters above the ground
+        s - shower age allegedly 0 < s < 2 but the maximum is for s = 1
+        r_min - a point where equation stops working
+    """
+    # print(f'No kurwa co jest')
+    # print(f'{r < r_min}')
+    if r < r_min:
+        r = r_min
+    r_ratio = r/r_m
+    return (r_ratio) ** (s - 2) * (1 + r_ratio) ** (s - 4.5)
+
+
 def jakis_rozklad(x):
     return np.exp(-(3 * x**4 - 2 * x**2))
 
