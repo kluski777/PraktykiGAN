@@ -46,7 +46,7 @@ def NKG(r: float, r_m: float = 79, s: float = 1, r_min: float = 1):
     r_min - a point where equation stops working
     r_max - where the equation stops working
     """
-    r_max = 50 * r_m
+    r_max = 2 * r_m # raczej znikome szanse ze wyjdzie poza 2 r_m, model sie dosc slabo uczy dla r > 2r_m
 
     if isinstance(r, (float, int)):
         if r < 0.0:

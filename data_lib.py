@@ -58,7 +58,17 @@ class Variable(np.ndarray):
         What I want to return is that class and then I wanna immediately use some new mechanics of that class 
         And What I wanna get is our_new_class.show() - plots and shows the figure
         out_new_class.savefig obviously plots and saves the figure (doesn't show)
+        By default use SI units.
+
+        Now I need some mechanics that's going to automate using the plots,
+        our_class1 + our_class2 = plot with 2 variables and added legend
+        out_class1 * our_class2 = plot with class1 variable on x axis and class2 variable on y
+        And now the hardest part - heatmap (no idea how to handle it yet)
+        I also need to handle histograms, how? With two variabels written on them
+        Also
         
+        How to handle smartness - I don't wanna insert all the arguments inside to it
+        it would be unreadable and dumb. How to make it super convenient
         """
     
     def __repr__(self):
