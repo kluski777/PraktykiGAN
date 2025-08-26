@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 from scipy.optimize import minimize_scalar, fsolve
+from numba import jit
 import numpy as np
 
 """
@@ -37,7 +38,7 @@ def greisen(t: np.ndarray | float, E0: float = 1e3, Ec: float = 21.8):
         return result
 
 
-
+# @jit(nopython=True)
 def NKG(r: float, r_m: float = 79, s: float = 1, r_min: float = 1):
     """
     r - distance from the main axis
@@ -90,28 +91,27 @@ def metropolis_hastings_probing(distribution: callable, length: int):
 
     return xs, ys
 
+class rs_prober_NKG:
+    def __init__(self):
+        minimized = minimize_scalar(lambda x: -NKG(x), method='brent')
+        self.max_cache = -minimized.fun
+        self.bounds_cache = {}
 
-def rejection_sampling_probing(distribution: callable, length: int, epsilon: int, looking_x_left: int = -1, looking_x_right: int = 1, from_x: int = None):
-    """
-        epsilon - zwroci takie x dla ktorych f(x) > epsilon
-        X0 - charakterystyczna wartosc dla danego materialu - dlugosc radiacji
-    """
-    xs = []
+    def rejection_sampling(self, length: int, epsilon: float = 0.1, 
+                            looking_x_left: float = -1, looking_x_right: float = 1, 
+                            from_x: float = None):
+        if from_x is None:
+            from_x = fsolve(lambda x: NKG(x) - epsilon, looking_x_left)[0]
+        to_x = fsolve(lambda x: NKG(x) - epsilon, looking_x_right)[0]
 
-    minimized_function = minimize_scalar(lambda x: -distribution(x), method='brent') # moze wylazic na liczby urojone to trzeba by sprawdzic
-    max_value = -minimized_function.fun # trzeba znalezc maksymalna wartosc dystrubucji
-    if from_x is None:
-        from_x = fsolve(lambda x: distribution(x) - epsilon, looking_x_left)
-    to_x = fsolve(lambda x: distribution(x) - epsilon, looking_x_right)
+        xs = []
+        batch_size = length * 2  # Oversampling
 
-    while len(xs) < length:
-        X = np.random.uniform(from_x, to_x, size=length)
-        u = np.random.uniform(0, max_value, size=length)
-        samples = X[u <= distribution(X)]
-        if len(xs) + len(samples) >= length:
+        while len(xs) < length:
+            X = np.random.uniform(from_x, to_x, size=batch_size)
+            u = np.random.uniform(0, self.max_cache, size=batch_size)
+            samples = X[u <= NKG(X)]
             xs.extend(samples[:length - len(xs)])
-        else:
-            xs.extend(samples)
 
-    xs = np.array(xs)
-    return xs, distribution(xs)
+        xs = np.array(xs[:length])
+        return xs
