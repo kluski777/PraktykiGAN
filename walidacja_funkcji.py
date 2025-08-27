@@ -45,26 +45,25 @@ def NKG(r: float, r_m: float = 79, s: float = 1, r_min: float = 1):
     r_m - Molier radius: for earth 79 meters at the sea level or 91 meters above the ground
     s - shower age allegedly 0 < s < 2 but the maximum is for s = 1
     r_min - a point where equation stops working
-    r_max - where the equation stops working
+    r_max - where the equation stops working, 2 * r_m
     """
-    r_max = 2 * r_m # raczej znikome szanse ze wyjdzie poza 2 r_m, model sie dosc slabo uczy dla r > 2r_m
+    r_max = 2 * r_m
 
-    if isinstance(r, (float, int)):
-        if r < 0.0:
-            return 0.0
-        if r < r_min:
-            r = r_min
-        if r > r_max:
-            r = r_max
-        r_ratio = r / r_m
-        return (r_ratio) ** (s - 2) * (1 + r_ratio) ** (s - 4.5)
+    if r < 0.0:
+        return 0.0
+    if r < r_min:
+        r = r_min
+    if r > r_max:
+        r = r_max
+    r_ratio = r / r_m
+    return (r_ratio) ** (s - 2) * (1 + r_ratio) ** (s - 4.5)
 
-    elif isinstance(r, np.ndarray):
-        r = r.copy()  # unikamy modyfikacji oryginalnej tablicy
-        r[r < r_min] = r_min
-        r[r > r_max] = r_max
-        r_ratio = r / r_m
-        return np.where(r_ratio >= 0.0, (r_ratio) ** (s - 2) * (1 + r_ratio) ** (s - 4.5), 0.0)
+
+
+def NKG_np(r: float, r_m: float = 79, s: float = 1, r_min: float = 1):
+    r_max = 2 * r_m
+    r_ratio = np.clip(r, r_min, r_max) / r_m
+    return np.power(r_ratio, s - 2) * np.power(1 + r_ratio, s - 4.5)
 
 
 def jakis_rozklad(x):
@@ -92,26 +91,26 @@ def metropolis_hastings_probing(distribution: callable, length: int):
     return xs, ys
 
 class rs_prober_NKG:
-    def __init__(self):
+    def __init__(self, epsilon: float = 0.1, looking_x_left: float = -1, looking_x_right: float = 1, from_x: float = None):
         minimized = minimize_scalar(lambda x: -NKG(x), method='brent')
         self.max_cache = -minimized.fun
         self.bounds_cache = {}
+        self.from_x = from_x
+        if self.from_x is None:
+            self.from_x = fsolve(lambda x: NKG(x) - epsilon, looking_x_left)[0]
+        self.to_x = fsolve(lambda x: NKG(x) - epsilon, looking_x_right)[0]
 
-    def rejection_sampling(self, length: int, epsilon: float = 0.1, 
-                            looking_x_left: float = -1, looking_x_right: float = 1, 
-                            from_x: float = None):
-        if from_x is None:
-            from_x = fsolve(lambda x: NKG(x) - epsilon, looking_x_left)[0]
-        to_x = fsolve(lambda x: NKG(x) - epsilon, looking_x_right)[0]
+    def rejection_sampling(self, length: int):
+        xs = np.empty(length)  # Pre-allocate
+        filled = 0
 
-        xs = []
-        batch_size = length * 2  # Oversampling
+        while filled < length:
+            X = np.random.uniform(self.from_x, self.to_x, size=length)
+            u = np.random.uniform(0, self.max_cache, size=length)
+            samples = X[u <= NKG_np(X)]
 
-        while len(xs) < length:
-            X = np.random.uniform(from_x, to_x, size=batch_size)
-            u = np.random.uniform(0, self.max_cache, size=batch_size)
-            samples = X[u <= NKG(X)]
-            xs.extend(samples[:length - len(xs)])
+            n_samples = min(len(samples), length - filled)
+            xs[filled:filled + n_samples] = samples[:n_samples]
+            filled += n_samples
 
-        xs = np.array(xs[:length])
         return xs
