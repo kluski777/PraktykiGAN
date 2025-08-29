@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 from scipy.optimize import minimize_scalar, fsolve
-from numba import jit
 import numpy as np
 
 """
@@ -59,7 +58,6 @@ def NKG(r: float, r_m: float = 79, s: float = 1, r_min: float = 1):
     return (r_ratio) ** (s - 2) * (1 + r_ratio) ** (s - 4.5)
 
 
-
 def NKG_np(r: float, r_m: float = 79, s: float = 1, r_min: float = 1):
     r_max = 2 * r_m
     r_ratio = np.clip(r, r_min, r_max) / r_m
@@ -90,11 +88,11 @@ def metropolis_hastings_probing(distribution: callable, length: int):
 
     return xs, ys
 
+# rzuc to kiedy an gpu
 class rs_prober_NKG:
     def __init__(self, epsilon: float = 0.1, looking_x_left: float = -1, looking_x_right: float = 1, from_x: float = None):
         minimized = minimize_scalar(lambda x: -NKG(x), method='brent')
         self.max_cache = -minimized.fun
-        self.bounds_cache = {}
         self.from_x = from_x
         if self.from_x is None:
             self.from_x = fsolve(lambda x: NKG(x) - epsilon, looking_x_left)[0]
@@ -107,10 +105,65 @@ class rs_prober_NKG:
         while filled < length:
             X = np.random.uniform(self.from_x, self.to_x, size=length)
             u = np.random.uniform(0, self.max_cache, size=length)
-            samples = X[u <= NKG_np(X)]
+            samples = X[u <= NKG_np(X)] # zgaduje ze to jest super kosztowne
 
             n_samples = min(len(samples), length - filled)
             xs[filled:filled + n_samples] = samples[:n_samples]
             filled += n_samples
 
         return xs
+
+import numpy as np
+from numba import cuda
+from numba.cuda.random import create_xoroshiro128p_states, xoroshiro128p_uniform_float32
+from scipy.optimize import minimize_scalar, fsolve
+
+@cuda.jit(device=True)
+def NKG_cuda(r):
+    r_m = 79.0
+    s = 1.0
+    r_min = 1.0
+    r_max = 2 * r_m
+    r_ratio = max(min(r, r_max), r_min) / r_m
+    return (r_ratio ** (s - 2)) * ((1 + r_ratio) ** (s - 4.5))
+
+def NKG_cpu(r):
+    r_m = 79.0
+    s = 1.0
+    r_min = 1.0
+    r_max = 2 * r_m
+    r_ratio = np.clip(r, r_min, r_max) / r_m
+    return np.power(r_ratio, s - 2) * np.power(1 + r_ratio, s - 4.5)
+
+@cuda.jit
+def rejection_kernel(rng_states, from_x, to_x, max_val, output, count):
+    idx = cuda.grid(1)
+    if idx >= rng_states.size:
+        return
+    for _ in range(1000):  # Increased for more samples
+        x = xoroshiro128p_uniform_float32(rng_states, idx) * (to_x - from_x) + from_x
+        u = xoroshiro128p_uniform_float32(rng_states, idx) * max_val
+        if u <= NKG_cuda(x):
+            pos = cuda.atomic.add(count, 0, 1)
+            if pos < output.size:
+                output[pos] = x
+
+class rs_prober_NKG_GPU:
+    def __init__(self, epsilon=0.1):
+        self.max_cache = -minimize_scalar(lambda x: -NKG_cpu(x), bounds=(1, 158), method='bounded').fun
+        self.from_x = 0  # Fixed to domain min
+        self.to_x = fsolve(lambda x: NKG_cpu(x) - epsilon, 79)[0]  # Better initial for convergence
+
+    def rejection_sampling(self, length):
+        threads_per_block = 256
+        blocks = 128  # Increased for more parallelism
+        total_threads = blocks * threads_per_block
+        rng = create_xoroshiro128p_states(total_threads, seed=42)
+        d_out = cuda.device_array(length * 2, dtype=np.float32)
+        d_count = cuda.device_array(1, dtype=np.int32)
+        d_count[0] = 0
+
+        rejection_kernel[blocks, threads_per_block](rng, self.from_x, self.to_x, self.max_cache, d_out, d_count)
+
+        n = d_count.copy_to_host()[0]
+        return d_out.copy_to_host()[:min(length, n)]
