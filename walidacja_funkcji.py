@@ -1,6 +1,8 @@
+from numba.cuda.random import create_xoroshiro128p_states, xoroshiro128p_uniform_float32
 import matplotlib.pyplot as plt
 from scipy.optimize import minimize_scalar, fsolve
 import numpy as np
+from numba import cuda
 
 """
     Zwykly greisen
@@ -91,12 +93,12 @@ def metropolis_hastings_probing(distribution: callable, length: int):
 # rzuc to kiedy an gpu
 class rs_prober_NKG:
     def __init__(self, epsilon: float = 0.1, looking_x_left: float = -1, looking_x_right: float = 1, from_x: float = None):
-        minimized = minimize_scalar(lambda x: -NKG(x), method='brent')
+        minimized = minimize_scalar(lambda x: -NKG_np(x), method='brent')
         self.max_cache = -minimized.fun
         self.from_x = from_x
         if self.from_x is None:
-            self.from_x = fsolve(lambda x: NKG(x) - epsilon, looking_x_left)[0]
-        self.to_x = fsolve(lambda x: NKG(x) - epsilon, looking_x_right)[0]
+            self.from_x = fsolve(lambda x: NKG_np(x) - epsilon, looking_x_left)[0]
+        self.to_x = fsolve(lambda x: NKG_np(x) - epsilon, looking_x_right)[0]
 
     def rejection_sampling(self, length: int):
         xs = np.empty(length)  # Pre-allocate
@@ -113,10 +115,6 @@ class rs_prober_NKG:
 
         return xs
 
-import numpy as np
-from numba import cuda
-from numba.cuda.random import create_xoroshiro128p_states, xoroshiro128p_uniform_float32
-from scipy.optimize import minimize_scalar, fsolve
 
 @cuda.jit(device=True)
 def NKG_cuda(r):
@@ -140,7 +138,7 @@ def rejection_kernel(rng_states, from_x, to_x, max_val, output, count):
     idx = cuda.grid(1)
     if idx >= rng_states.size:
         return
-    for _ in range(1000):  # Increased for more samples
+    for _ in range(100):  # Increased for more samples
         x = xoroshiro128p_uniform_float32(rng_states, idx) * (to_x - from_x) + from_x
         u = xoroshiro128p_uniform_float32(rng_states, idx) * max_val
         if u <= NKG_cuda(x):
