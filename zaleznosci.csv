@@ -85,4 +85,15 @@ Proba, Modyfikacja, wynik, decyzja
 84, LR_RATIO 0.7 -> 1, Stabilnie sie uczy ale nie wyglada jakby mial sie dopasowac do piku, zostaje
 85, Zwiekszyc stala penalizacji na G do 0.3, srednie r na G wystrzelilo do 14 wygral D od 3000 epoki D zdominowal, zostaje
 86, Stala penalizacji na 1, dokladnie to samo jeszcze przed 3000 epokao totalnie to nie dziala zgaduje ze pojedyncze probki daleko od centrum z rozkladu prawdziwego pokazuja czy jest ona caly rozklad prawdziwy czy nie, powrot
-87, zamiast sredniej kwadratow to odchyelnie std jako penalizator, wykresy nie pokazuja aby cokolwiek z odch. sie poprawilo w G, zostaje 
+87, zamiast sredniej kwadratow to odchyelnie std jako penalizator, wykresy nie pokazuja aby cokolwiek z odch. sie poprawilo w G, zostaje
+88, penalizacja, Lipa z penalizacja update wag jest dosc nieprzewidywalny, powrot
+89, Maly dropOut na G i LR_RATIO 1 -> 0.75, na poczatku bardzo dobrze to wyglada nie uczy sie dobrze dla duzych r, zostaje 
+90, Penalizacja G ale z kwadratem, nie trzyma kwadratu odleglosci D zdecydowanie dominuje brak uczenia, powrot
+91, DropOut G 0.05 -> 0.1, gorszy rozklad, powrot
+92, LR_CONSTANT 5e-4 -> 5e-3, G sie dostosowal widac tu pewien potencjal, zostaje
+93, DropOut G 0.05 -> 0.15 LR_RATIO 0.75 -> 1, Slaby rozklad ten sam problem ze skupiskami pojawia sie,
+94, LR_RATIO 1->2, Generator totalnie zdominowal, powrot
+95, LR_RATIO 1->0.1, za wolno sie D uczy chyba wspiera on duze r, powrot 
+96, LR_RATIO 0.1 -> 0.01, ucieka do duzych wartosci 
+
+97, Normalizing flow
