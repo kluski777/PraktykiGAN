@@ -95,5 +95,6 @@ Proba, Modyfikacja, wynik, decyzja
 94, LR_RATIO 1->2, Generator totalnie zdominowal, powrot
 95, LR_RATIO 1->0.1, za wolno sie D uczy chyba wspiera on duze r, powrot 
 96, LR_RATIO 0.1 -> 0.01, ucieka do duzych wartosci 
-
 97, Normalizing flow
+98, BatchNorm nie za bardzo dziala na NF, powrot
+99
