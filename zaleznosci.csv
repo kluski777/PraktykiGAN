@@ -97,4 +97,5 @@ Proba, Modyfikacja, wynik, decyzja
 96, LR_RATIO 0.1 -> 0.01, ucieka do duzych wartosci 
 97, Normalizing flow
 98, BatchNorm nie za bardzo dziala na NF, powrot
-99
+99, LeakyReLU na NF, nadal niestabilny, powrot
+100, sigmoid na NF na scalerze, 
