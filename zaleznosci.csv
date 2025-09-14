@@ -98,4 +98,23 @@ Proba, Modyfikacja, wynik, decyzja
 97, Normalizing flow
 98, BatchNorm nie za bardzo dziala na NF, powrot
 99, LeakyReLU na NF, nadal niestabilny, powrot
-100, sigmoid na NF na scalerze, 
+100, Wiecej warstw, Rozklad przypominajacy rozklad normalny, zostaje
+101, Bez ostatnich dwoch warstw, nie widac roznicy, zostaje
+102, Inne base componenty rozne funkcje aktywacji, widac ewidentny pik, zostaje
+103, usuniecie warstw dla translacji nie wydaja sie przydatne, beznadziejny rozklad przesuniety wzgledem 0, powrot
+104, dodanie batch norma na base components, obcina male i duze x ale piku nie ma, zostaje 
+105, batch normy na zmiane, nie obcina tak dobrze ale pik lepiej widac, zostaje
+106, mniejszy lr o rzad wielkosci, lipa - 2 piki, powrot
+107, pozbyc sie batchnormow niektorych moze jakos inaczej da sie odciac male i duze x, przepiekny pik ale dla duzych sigm za duze p-stwo inverse nie za bardzo dziala, zostaje
+108, batch normy dla skalowania, bardzo rozklad ale inverse przestal dzialac, zostaje
+109, Wyrzucenie jakiegokolwiek ReLU chcialbym cos co jest symetryczne wzgledem x, rozklad symetryczny calkiem fajny problem z inversem, zostaje
+110, Bez funkcji aktywacji wszystko jest przesadnie scisniete, liniowe warstwy bez funkcji aktywacji radza sobie calkiem dobrze, zostaje
+111, lr na 4e-7, ladnie sie trenuje tylko wolno, zostaje
+112, liczba warstw 20 -> 10, wolniej sie trenuje, zostaje
+113, BATCH_SIZE 8 -> 32, rozklad jest ladny tylko ze zly, zostaje
+114, bez batch norma, bez zmian, zostaje
+115, warstw na NF 10 -> 20, rozklad nieco ladniejszy ale inverse nie dziala, powrot
+116, tanhy na scalerze, ladniejszy rozklad, zostaje
+117, warstw na NF 20 -> 10, rozklad duzo ladniejszy, zostaje
+118, warstw na NF 10 -> 8, nie widze roznicy, zostaje
+119, warstw na NF 8 -> 6,  nadal nie widze roznicy, zostaje 
