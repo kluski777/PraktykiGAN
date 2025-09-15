@@ -118,3 +118,13 @@ Proba, Modyfikacja, wynik, decyzja
 117, warstw na NF 20 -> 10, rozklad duzo ladniejszy, zostaje
 118, warstw na NF 10 -> 8, nie widze roznicy, zostaje
 119, warstw na NF 8 -> 6,  nadal nie widze roznicy, zostaje 
+120, Cel znalezienie optymalnego NF - batchNormy na translacji, to nie jest dobry pomysl, powrot
+121, tanh na skalowaniu, jesli jest na koncu to nie jest to dobry pomysl, powrot
+122, batchNormy na skalowaniu, chyba tez niezbyt dobry pomysl, powrot
+123, mniej warstw rowniez daje dobry rozklad, zostaje
+124, mniej warstw wolniej sie uczy ale daje lepszy rozklad, zostaje
+125, RMSprop jako optim, duzo szybciej sie uczy, zostaje 
+126, SGD jako optim, wolniej sie uczy ale duzo wiekszy lr potrafi wziac - nie dostosowuje sie do rozkladu, powrot
+127, wiecej warstw, niszczy inverse'a, powrto
+128, 144 -> 768 czastek wyrzuca, szybciej sie uczy, zostaje
+129,  
