@@ -1,7 +1,11 @@
 import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
+import sys
+
 from walidacja_funkcji import *
+
+sys.path.append('/home/mamusiaarusia/myenv/lib/python3.12/site-packages/torch')
 
 prober = rs_prober_NKG(epsilon=0.1, looking_x_left=-1, looking_x_right=1, from_x=0)
 
@@ -105,9 +109,11 @@ class NF(nn.Module):
 
         return output
 
-def learn_nf(nf_model):
+
+def learn_nf(nf_model: nn.Module, GENERATOR_SAMPLES_TO_RETURN: int, BATCH_SIZE: int, EPOCHS: int, dim: int = 0):
+    PROBE_SIZE = GENERATOR_SAMPLES_TO_RETURN * BATCH_SIZE
     values = get_2d_data(PROBE_SIZE=PROBE_SIZE).reshape(BATCH_SIZE, -1, 2)
-    x = torch.Tensor(values[:, :, 0]).cuda()
+    x = torch.Tensor(values[:, :, dim]).cuda()
     loss_history = np.empty(EPOCHS)
 
     nf_model.train()
@@ -116,7 +122,7 @@ def learn_nf(nf_model):
         loss_history[epoch] = nf_model.loss_and_step(x)
         if epoch % 5 == 0:
             values = get_2d_data(PROBE_SIZE=PROBE_SIZE).reshape(BATCH_SIZE, -1, 2)
-            x = torch.Tensor(values[:, :, 0]).cuda()
+            x = torch.Tensor(values[:, :, dim]).cuda()
 
     nf_model.eval()
 
@@ -125,7 +131,7 @@ def learn_nf(nf_model):
     plt.show()
 
     temp = get_2d_data(PROBE_SIZE=PROBE_SIZE * 10).reshape(BATCH_SIZE * 10, -1, 2)
-    x = torch.Tensor(temp[:, :, 0]).cuda()
+    x = torch.Tensor(temp[:, :, dim]).cuda()
     theory = np.random.randn(PROBE_SIZE * 5)
     values = nf_model.forward(x)
     inversed = nf_model.inverse(values).detach().flatten().cpu().numpy()
