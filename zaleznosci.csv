@@ -127,4 +127,8 @@ Proba, Modyfikacja, wynik, decyzja
 126, SGD jako optim, wolniej sie uczy ale duzo wiekszy lr potrafi wziac - nie dostosowuje sie do rozkladu, powrot
 127, wiecej warstw, niszczy inverse'a, powrto
 128, 144 -> 768 czastek wyrzuca, szybciej sie uczy, zostaje
-129,  
+129, Te katy temu modelowi chyba nie za bardzo pomagaja caly czas sie myli z nimi,
+130, Wiecej zwracanych czastek 768 -> 1024, nie za bardzo cokolwiek zmienia, powrot
+131, czastek 1024 -> 512, stabilniej sie uczy, zostaje
+132, czastek 512 -> 256, niestabilna strata, powrot
+133, 
